@@ -1,0 +1,86 @@
+
+## Program: Input:  Set of  strings of DNA and the suspected length of the genome of the genome, k. 
+##          Output: Returns the k-mer that appears across all strands of DNA with the minimum variation
+##
+## Description: Scientist may know how long the length of the genome they are looking for. And know the strands
+## of DNA it is expected in. the program seatches for the most likely result. If the length is known of the k-mer
+## then the possible combinations are known as within DNA can onlyy have G,T,A,C, use this to systamtically search
+## through possiblilies. For 2-mer range opf AA to CC the index of each element of an array can represent a pattern.
+## Also need to find close matches as DNA replication not perfect.
+
+## Input variables:
+DNA = ["TCACAGACACTGGCTGATTATTGTCCCGGGTCTGAGGCATTT",
+       "TCACGGGGTCTCCAGACGATACTACGGACCGTAAACAACTGA",
+       "TGGGGGAATTGCTCACGGGTACGGAATTGTTCCACCCGGACG",
+       "CCAGACCAGTAAAGATTGGCAGCGTCACAGCTTGATCGGAGC",
+       "CATAACACACCTAAATAATCACAGTCTATCTCATTCGTTACG",
+       "GTGGTCTTATGGGACATGTCACGGTCGGGGCACGAAGAGAAT",
+       "CATGACCTTGACCCTTGATGTGCCCCCATTAAGTGCTCACAG",
+       "TCACGGGACTCCCTAGTGGGCCCATGGAACGAAAACAACTAA",
+       "ACGAAATGACCTACCAAGGGGGGGCGTGAGATAGTTTCACTG",
+       "CGAGTATCACTGTTTTGAGCCCCTGCAGTCAAGAACGGCAAG"]
+k = 6
+
+
+
+def NumberToPattern(index, k):
+    if k == 1:
+        return NumberToSymbol(index)
+    Ans = divmod(index, 4)
+    prefixIndex = Ans[0]
+    Remainder = Ans[1]
+    Val1 = NumberToSymbol(Remainder)
+    return NumberToPattern(prefixIndex, k -1) + Val1
+
+def NumberToSymbol(Num):
+    symbol = ""
+    if Num == 0:
+        symbol = "A"
+    if Num == 1:
+        symbol = "C"
+    if Num == 2:
+        symbol = "G"
+    if Num == 3:
+        symbol = "T"
+    return symbol;
+
+def HammingDistance(Genome1, Genome2):
+    Tot = 0
+    for i in range(0, (len(Genome1))):
+        if Genome1[i] != Genome2[i]:
+            Tot = Tot + 1
+    return Tot
+
+
+def DistanceBetweenPatternAndStrings(Pattern, DNA):
+    k = len(Pattern)                    
+    distance = 0
+    HammingDist = 0
+    TempD = 0
+    for i in range (0, len(DNA)):											# for each string Text in Dna
+        Text = DNA[i]
+        HammingDist = len(Text) + 1  										# find Hamming Distance the difference between strings 
+        for j in range(0, len(Text) - k):
+            KPattern = Text[j:(j+k)]
+            TempD = HammingDistance(Pattern, KPattern)
+            if HammingDist > TempD:
+                HammingDist = TempD
+        distance = distance + HammingDist									# Sum Hamming disatnace for set, for given pattern
+    return distance
+
+	
+def MedianString(DNA, k):
+    distance = len(DNA[0]) + 10												# Intial worse case guess
+    BetweenD = 0
+    Median = ""
+    for i in range(0, (4**k) - 1):											# Iterate through all possible combination of patterns
+        Pattern = NumberToPattern(i, k)										# Turn value in to DNA pattern
+        BetweenD = DistanceBetweenPatternAndStrings(Pattern, DNA)			# Calculate Numbrt of erros need to fit all strings within set
+        if distance > BetweenD:												# Calculate if distanceis lower than previous best
+            distance = BetweenD
+            Median = Pattern
+    return Median
+
+TempStr = ""
+TempStr = MedianString(DNA, k)
+print(TempStr)
